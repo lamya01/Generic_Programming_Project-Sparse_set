@@ -236,11 +236,11 @@ class SparseArray
 		}
 		T operator*() 
 		{
-			return *p_it_;
+			return (*p_it_)._element;
 		}
 		Iterator& operator++() // pre
 		{
-			p_it_ = p_it_->next;
+			p_it_ = p_it_->_next;
 			return *this;
 		}
 		Iterator operator++(int) // post
@@ -273,12 +273,9 @@ int main()
 	SparseElement<Complex> s1(5, a), s2(6, a);
 	cout<<(s1 != a)<<endl<<endl<<endl;
 	
-	
-	
 	//TEST SNIPPET 2
-	SparseElement<int> b(4, 5);	
+	SparseElement<int> b(4, 5);
 	cout<< (b==7) << endl<<endl<<endl;
-	
 	
 	//TEST SNIPPET 3
 	SparseArray<int> c(10);
