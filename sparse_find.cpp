@@ -729,13 +729,13 @@ int main()
 	e.display();
     Date ser(15,3,1969);
     SparseArray<Date>:: Iterator it;
-
+	
     it = find(e.begin(), e.end(), ser);
     if (it != e.end())
         std::cout << "Element " << *it << " found in sparse array..! " << endl;
     else
         std::cout << "Element " << ser << " not found in sparse array..!"<< endl;
-
+	
     /*
 	cout<<(e[4]==Date(5,6,1982))<<endl;
 	e.sort();

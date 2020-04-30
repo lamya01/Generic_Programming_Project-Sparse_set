@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 using namespace std;
 
 //------------------------------------  DEFINITION OF COMPLEX NUMBER CLASS AND INPUT-OUTPUT STREAM OVERLOADING  -----------------------------
@@ -56,6 +57,11 @@ bool operator==(const Complex& lhs, const Complex& rhs)
 bool operator!=(const Complex& lhs, const Complex& rhs)
 {
 	return !(lhs==rhs);
+}
+
+const Complex operator+(const Complex& lhs, const Complex& rhs)
+{
+	return Complex(lhs._re + rhs._re, lhs._im + rhs._im);
 }
 
 //---------------------------------------------------------  END OF COMPLEX NUMBER FUNCTIONS  ----------------------------------------------------
@@ -141,6 +147,8 @@ bool operator!=(const Date& lhs, const Date& rhs)
 
 //---------------------------------------------------------  SPARSE ELEMENT TEMPLATE CLASS -------------------------------------------------------
 
+template<typename T>
+class SparseArray;
 
 template<typename T>
 class SparseElement
@@ -174,6 +182,7 @@ class SparseElement
 	template<class V> bool friend operator!=(const SparseElement<V>& lhs, const SparseElement<V> & rhs);
 	template<class V> friend std::istream& operator>>(std::istream& is, SparseElement<V>& obj);
 	template<class V> friend std::ostream& operator<<(std::ostream& os, const SparseElement<V>& obj);
+	template<class V> friend const SparseArray<V> operator+(const SparseArray<V> arr1, const SparseArray<V> arr2);
 };
 
 template<typename T>
@@ -261,6 +270,8 @@ class SparseArray
 	{
 		
 	}
+	
+	template<class V> friend const SparseArray<V> operator+(const SparseArray<V> arr1, const SparseArray<V> arr2);
 	
 	T& operator[] (const int index) //RETURNS LVALUE: operator overloading for [] brackets
 	{
@@ -358,7 +369,7 @@ class SparseArray
 					else if(trav->_index > index)
 					{
 						cout<<"non-empty, didn't reach end: empty returned"<<endl;
-						T new_el;					
+						T new_el;			
 						return new_el;
 					}
 				}
@@ -593,6 +604,73 @@ class SparseArray
 	}
 };
 
+//--------------------------------------------------------  SUM OF TWO SPARSE ARRAYS  -----------------------------------------------------
+
+template<typename T>
+const SparseArray<T> operator+(const SparseArray<T> arr1, const SparseArray<T> arr2)
+{	
+	int size1 = arr1._size;
+	int size2 = arr2._size;
+	int size = (size1 > size2) ? size1 : size2;
+	
+	//cout<<"size of sum is "<< size <<endl;
+	
+	SparseArray<T> sumArray(size);
+	
+	SparseElement<T> *trav1 = arr1._head;
+	SparseElement<T> *trav2 = arr2._head;
+	
+	while(trav1 || trav2)
+	{
+		if(trav1 && trav2)
+		{
+			//cout<<"Gen: trav1 is "<<trav1->_index<<", trav2 is "<<trav2->_index<<endl;
+			
+			if(trav1->_index < trav2->_index)
+			{
+				sumArray[trav1->_index] = (*trav1)._element;
+				trav1 = trav1->_next;
+			}
+			
+			else if(trav1->_index > trav2->_index)
+			{
+				sumArray[trav2->_index] = (*trav2)._element;
+				trav2 = trav2->_next;
+			}
+			
+			else
+			{
+				sumArray[trav1->_index] = (*trav1)._element + (*trav2)._element;
+				trav1 = trav1->_next;
+				trav2 = trav2->_next;
+			}
+		}
+		
+		else if(!trav1) //if the end of array 1 has been reached
+		{			
+			while(trav2)
+			{
+				//cout<<"trav1 done: trav2 is at "<<trav2->_index<<endl;
+				sumArray[trav2->_index] = (*trav2)._element;
+				trav2 = trav2->_next;
+			}
+		}
+		
+		else if(!trav2) //if the end of array 2 has been reached
+		{
+			while(trav1)
+			{
+				//cout<<"trav2 done: trav1 is at "<<trav1->_index<<endl;
+				sumArray[trav1->_index] = (*trav1)._element;
+				trav1 = trav1->_next;
+			}
+		}
+	}
+	
+	//sumArray.display();
+	return sumArray;
+}
+
 int main()
 {
 	/*
@@ -684,20 +762,41 @@ int main()
 	}
 	*/
 	
-	
-	//TEST SNIPPET 5
+	/*
+	//TEST SNIPPET 5	
 	SparseArray<Date> e(10);
 	e.display();
-	e.sort();
+	//e.sort();
 	e[4] = Date(5,6,1982);
 	e[2] = Date();
 	e[7] = Date(15,3,1969);
 	e[6] = e[7];
 	e[3] = e[2];
 	e.display();
-	cout<<(e[4]==Date(5,6,1982))<<endl;
-	e.sort();
-	cout<<e.search(Date(5,6,1982))<<endl;
-	cout<<e.search(Date(5,6,1782))<<endl;
-	e.display();
+    Date ser(15,3,1969);
+    SparseArray<Date>:: Iterator it;
+	
+    it = find(e.begin(), e.end(), ser);
+    if (it != e.end())
+        std::cout << "Element " << *it << " found in sparse array..! " << endl;
+    else
+        std::cout << "Element " << ser << " not found in sparse array..!"<< endl;
+	*/
+	
+	SparseArray<Complex> arr1(10);
+	arr1[5] = Complex(5,10);
+	arr1[7] = Complex(7,14);
+	arr1[1] = Complex(1,2);
+	arr1[8] = Complex(8,16);
+	arr1.display();
+	
+	SparseArray<Complex> arr2(8);
+	arr2[2] = Complex(2,4);
+	arr2[1] = Complex(1,2);
+	arr2[5] = Complex(5,10);
+	arr2.display();
+	
+	cout<<"Sum:"<<endl;
+	SparseArray<Complex> sa = arr1 + arr2;
+	sa.display();
 }
